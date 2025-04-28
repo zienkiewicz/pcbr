@@ -1,0 +1,3 @@
+[submodule "extern/kicad"]
+	path = extern/kicad
+	url = https://gitlab.com/kicad/code/kicad.git
