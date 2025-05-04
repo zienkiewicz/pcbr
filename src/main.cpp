@@ -1,14 +1,13 @@
 #include "sexpr_parser.h"
 #include "layer.h"
+#include "layer_utils.h"
+#include "assertm.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <memory>
-#include <cassert>
 #include <vector>
-
-#define assertm(exp, msg) assert((void(msg), exp))
 
 const SEXPR::SEXPR_LIST *find_sub_sexpr(const SEXPR::SEXPR_LIST *sexpr, const std::string& key) {
 	for (int64_t i = 0; i < sexpr->GetNumberOfChildren(); i++) {
@@ -42,9 +41,7 @@ void assert_header_section(const std::unique_ptr<SEXPR::SEXPR>& root_ast) {
 
 	// Get the first child of the list, should be a symbol named kicad_pcb
 	auto child = root_ast->GetChild(0);
-	assertm("root s-expression should start with a symbol named \"kicad_pcb\"", root_ast->IsSymbol());
-	auto symbol = child->GetSymbol();
-	assertm("root s-expression should start with a symbol named \"kicad_pcb\"", ("kicad_pcb" == symbol));
+	assertm("root s-expression should start with a symbol named \"kicad_pcb\"", child->IsSymbol() && "kicad_pcb" == child->GetSymbol());
 }
 
 void process_general_section(const SEXPR::SEXPR_LIST *sexpr) {
@@ -52,19 +49,6 @@ void process_general_section(const SEXPR::SEXPR_LIST *sexpr) {
 	auto general = find_sub_sexpr(sexpr, "general");
 	assertm("general section must exist in the sexpr", general != nullptr);
 	std::cout << general->AsString() << std::endl;
-}
-
-void layers_assert_section(const SEXPR::SEXPR_LIST *layers) {
-	auto children = layers->GetNumberOfChildren();
-	assertm("layers section should consist of at least 1 layer", children > 1);
-	for (int64_t i = 0; i < children; i++) {
-		auto child = layers->GetChild(i);
-		if (i == 0) {
-			assertm("layers section should begin with a symbol \"layers\"", (child->IsSymbol() && child->GetSymbol() == "layers"));
-		} else {
-			assertm("each layer inside layers section should be a list", child->IsList());
-		}
-	}
 }
 
 void layers_process_section(const SEXPR::SEXPR_LIST *sexpr) {
@@ -105,7 +89,7 @@ int main(int argc, char **argv) {
 	auto list = ast->GetList();
 	process_general_section(list);
 
-	layers_assert_section(list);
+	LayerUtils::assertSection(list);
 	layers_process_section(list);
 	return 0;
 }

@@ -3,6 +3,8 @@
 #include "layer.h"
 
 namespace LayerUtils {
+	void assertSection(const SEXPR::SEXPR_LIST *layers);
+
 	Layer::TYPE mapType(const std::string& type);
 	
 	class LayerException : public std::exception {
