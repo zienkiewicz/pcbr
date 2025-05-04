@@ -2,37 +2,13 @@
 #include "layer.h"
 #include "layer_utils.h"
 #include "assertm.h"
+#include "sexpr_utils.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <memory>
 #include <vector>
-
-const SEXPR::SEXPR_LIST *find_sub_sexpr(const SEXPR::SEXPR_LIST *sexpr, const std::string& key) {
-	for (int64_t i = 0; i < sexpr->GetNumberOfChildren(); i++) {
-		SEXPR::SEXPR* child = sexpr->GetChild(i);
-		if (!child->IsList()) {
-			continue;
-		}
-
-		const SEXPR::SEXPR_LIST* list = child->GetList();
-		size_t count = list->GetNumberOfChildren();
-		if (count < 1) {
-			continue;
-		}
-
-		SEXPR::SEXPR* head = list->GetChild(0);
-		if (head->IsSymbol() && head->GetSymbol() == key) {
-			return list;
-		}
-
-		if (auto recurse = find_sub_sexpr(list, key)) {
-			return recurse;
-		}
-	}
-	return nullptr;
-}
 
 void assert_header_section(const std::unique_ptr<SEXPR::SEXPR>& root_ast) {
 	// Check if the root sexpr is even a list and that it contains children
@@ -68,11 +44,11 @@ void layers_process_section(const SEXPR::SEXPR_LIST *sexpr) {
 }
 
 int main(int argc, char **argv) {
-
 	if (argc < 2) {
 		std::cout << "Usage: " << argv[0] << " <kicad_pcb file>" << std::endl;
 		return 0;
 	}
+
 	std::string filename {argv[1]};
 	SEXPR::PARSER parser;
 	std::unique_ptr<SEXPR::SEXPR> ast;
