@@ -32,7 +32,6 @@ Layer::Layer(const SEXPR::SEXPR_LIST *layer) {
 			typeSeen = true;
 		}
 	}
-	m_USER_NAME = "dummy";
 
 #ifdef DEBUG
 		std::cerr << "[+] Layer created with: ordinalSeen " << ordinalSeen
