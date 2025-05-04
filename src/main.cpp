@@ -1,14 +1,16 @@
 #include "sexpr_parser.h"
+#include "layer.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <memory>
 #include <cassert>
+#include <vector>
 
 #define assertm(exp, msg) assert((void(msg), exp))
 
-const SEXPR::SEXPR_LIST* find_sub_sexpr(const SEXPR::SEXPR_LIST* sexpr, const std::string& key) {
+const SEXPR::SEXPR_LIST *find_sub_sexpr(const SEXPR::SEXPR_LIST *sexpr, const std::string& key) {
 	for (int64_t i = 0; i < sexpr->GetNumberOfChildren(); i++) {
 		SEXPR::SEXPR* child = sexpr->GetChild(i);
 		if (!child->IsList()) {
@@ -52,6 +54,35 @@ void process_general_section(const SEXPR::SEXPR_LIST *sexpr) {
 	std::cout << general->AsString() << std::endl;
 }
 
+void layers_assert_section(const SEXPR::SEXPR_LIST *layers) {
+	auto children = layers->GetNumberOfChildren();
+	assertm("layers section should consist of at least 1 layer", children > 1);
+	for (int64_t i = 0; i < children; i++) {
+		auto child = layers->GetChild(i);
+		if (i == 0) {
+			assertm("layers section should begin with a symbol \"layers\"", (child->IsSymbol() && child->GetSymbol() == "layers"));
+		} else {
+			assertm("each layer inside layers section should be a list", child->IsList());
+		}
+	}
+}
+
+void layers_process_section(const SEXPR::SEXPR_LIST *sexpr) {
+	auto layers = find_sub_sexpr(sexpr, "layers");
+	std::vector<Layer> v;
+#ifdef DEBUG
+	std::cerr << "[+] process_layers_section" << std::endl << layers->AsString() << std::endl;
+#endif
+	for (int64_t i = 1, children = layers->GetNumberOfChildren(); i < children; i++) {
+		auto child = layers->GetChild(i);
+#ifdef DEBUG
+		std::cerr << "[+] Child" << std::endl << child->AsString() << std::endl;
+#endif
+		assertm("child of layers must be a list", child->IsList());
+		v.push_back(Layer(child->GetList()));
+	}
+}
+
 int main(int argc, char **argv) {
 
 	if (argc < 2) {
@@ -71,7 +102,10 @@ int main(int argc, char **argv) {
 	}
 	
 	assert_header_section(ast);
-	process_general_section(ast->GetList());
+	auto list = ast->GetList();
+	process_general_section(list);
 
+	layers_assert_section(list);
+	layers_process_section(list);
 	return 0;
 }
