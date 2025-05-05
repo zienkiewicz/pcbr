@@ -9,12 +9,14 @@ project "pcbr"
 	targetdir "bin/%{cfg.buildcfg}"
 	objdir "obj/%{cfg.buildcfg}"
 
-	-- Get include and library flags from wx-config
-	local cxxflags = os.outputof("wx-config --cxxflags")
-	local libs = os.outputof("wx-config --libs")
-	-- filter {}
-	buildoptions { cxxflags }
-	linkoptions { libs }
+	-- Get include and library flags from wx-config and sdl-config
+	local wx_cxxflags = os.outputof("wx-config --cxxflags")
+	local wx_libs = os.outputof("wx-config --libs")
+	local sdl_cxxflags = os.outputof("sdl2-config --cxxflags")
+	local sdl_libs = os.outputof("sdl2-config --libs")
+
+	buildoptions { wx_cxxflags, sdl_cxxflags }
+	linkoptions { wx_libs, sdl_libs }
 
 	files {
 		"src/**.cpp",

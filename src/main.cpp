@@ -5,6 +5,7 @@
 #include "sexpr_utils.h"
 #include "general_utils.h"
 #include "general.h"
+#include "renderer.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -69,6 +70,15 @@ int main(int argc, char **argv) {
 	
 	layers_process_section(list);
 
+	Renderer pcbr("kicad_pcb render", 800, 600);
+	bool running = true;
+	while (running) {
+		running = pcbr.handleEvents();
+		pcbr.clear();
+		// Draw here
+		pcbr.present();
+		SDL_Delay(16);
+	}
 	return 0;
 }
 
