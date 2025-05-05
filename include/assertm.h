@@ -1,3 +1,3 @@
 #include <cassert>
-#define assertm(exp, msg) assert((void(msg), exp))
+#define assertm(msg, exp) assert((void(msg), exp))
 

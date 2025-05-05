@@ -10,6 +10,9 @@ const char* LayerUtils::LayerException::what() const noexcept {
 
 // Run asserts on the given section ensuring it's structured properly
 void LayerUtils::assertSection(const SEXPR::SEXPR_LIST *layers) {
+#ifdef DEBUG
+	std::cerr << "LayerUtils::assertSection: " << layers->AsString() << std::endl;
+#endif
         auto children = layers->GetNumberOfChildren();
         assertm("layers section should consist of at least 1 layer", children > 1);
         for (int64_t i = 0; i < children; i++) {

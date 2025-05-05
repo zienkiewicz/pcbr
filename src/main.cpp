@@ -13,8 +13,6 @@
 void assert_header_section(const std::unique_ptr<SEXPR::SEXPR>& root_ast) {
 	// Check if the root sexpr is even a list and that it contains children
 	assertm("root s-expression should be a list", root_ast->IsList());
-	assertm("root s-expression should have children", root_ast->GetNumberOfChildren() < 1);
-
 	// Get the first child of the list, should be a symbol named kicad_pcb
 	auto child = root_ast->GetChild(0);
 	assertm("root s-expression should start with a symbol named \"kicad_pcb\"", child->IsSymbol() && "kicad_pcb" == child->GetSymbol());
@@ -29,6 +27,7 @@ void process_general_section(const SEXPR::SEXPR_LIST *sexpr) {
 
 void layers_process_section(const SEXPR::SEXPR_LIST *sexpr) {
 	auto layers = find_sub_sexpr(sexpr, "layers");
+	LayerUtils::assertSection(layers);
 	std::vector<Layer> v;
 #ifdef DEBUG
 	std::cerr << "[+] process_layers_section" << std::endl << layers->AsString() << std::endl;
@@ -64,8 +63,6 @@ int main(int argc, char **argv) {
 	assert_header_section(ast);
 	auto list = ast->GetList();
 	process_general_section(list);
-
-	LayerUtils::assertSection(list);
 	layers_process_section(list);
 	return 0;
 }
