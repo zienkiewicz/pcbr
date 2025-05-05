@@ -14,6 +14,5 @@ public:
 		std::optional<double> angle = std::nullopt
 	) : Primitive(scope, std::move(layer), width, start, end, angle) {} 
 
-// TODO
-//	void draw(SDL_Renderer *renderer) const override;
+	void draw(SDL_Renderer *renderer) const override;
 };

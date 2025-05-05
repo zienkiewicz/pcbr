@@ -6,6 +6,10 @@
 
 #define noop
 
+void Line::draw(SDL_Renderer *renderer) const {
+	std::cout << "[+] START: " << m_start.value().first << ' ' << m_start.value().second << std::endl;
+}
+
 // FIXME: This is so shit
 
 // Parses out xy from (start x y), (end x y), etc...

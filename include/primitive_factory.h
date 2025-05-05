@@ -8,7 +8,7 @@
 
 class PrimitiveFactory {
 public:
-	using Creator = std::function<std::unique_ptr<Primitive>(SEXPR::SEXPR_LIST*)>;
+	using Creator = std::function<std::unique_ptr<Primitive>(const SEXPR::SEXPR_LIST*)>;
 
 	static PrimitiveFactory& instance() {
 		static PrimitiveFactory factory;
@@ -17,7 +17,7 @@ public:
 
 	void registerPrimitive(const std::string& name, Creator creator);
 
-	std::unique_ptr<Primitive> create(const std::string& name, SEXPR::SEXPR_LIST *sexpr);
+	std::unique_ptr<Primitive> create(const std::string& name, const SEXPR::SEXPR_LIST *sexpr);
 private:
 	std::map<std::string, Creator> creators;
 };

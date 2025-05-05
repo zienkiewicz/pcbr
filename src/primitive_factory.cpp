@@ -4,7 +4,7 @@ void PrimitiveFactory::registerPrimitive(const std::string& name, Creator creato
 	creators[name] = std::move(creator);
 }
 
-std::unique_ptr<Primitive> PrimitiveFactory::create(const std::string& name, SEXPR::SEXPR_LIST *sexpr) {
+std::unique_ptr<Primitive> PrimitiveFactory::create(const std::string& name, const SEXPR::SEXPR_LIST *sexpr) {
 	auto it = creators.find(name);
 	if (it != creators.end()) {
 		return (it->second)(sexpr);

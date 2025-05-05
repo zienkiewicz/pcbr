@@ -6,6 +6,8 @@
 #include "general_utils.h"
 #include "general.h"
 #include "renderer.h"
+#include "line.h"
+#include "primitive_factory.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -72,6 +74,24 @@ int main(int argc, char **argv) {
 
 	Renderer pcbr("kicad_pcb render", 800, 600);
 	bool running = true;
+
+
+
+
+
+	std::unique_ptr<SEXPR::SEXPR> line;
+	try {
+		line = parser.Parse("(gr_line (start 58 42) (end 58 29) (angle 90) (layer Edge.Cuts) (width 0.15)");
+		std::cout << "Parsed dummy line successfully!\n";
+	} catch (const std::exception& e) {
+		std::cerr << "Parse error: " << e.what() << "\n";
+		return 1;
+	}
+
+	auto l = Line(line->GetList());
+	std::cout << "Successs??? " << std::endl;
+	l.draw(static_cast<SDL_Renderer*>(nullptr));
+
 	while (running) {
 		running = pcbr.handleEvents();
 		pcbr.clear();
