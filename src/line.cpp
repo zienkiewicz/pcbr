@@ -3,11 +3,15 @@
 
 #include <iostream>
 #include <sstream>
+#include <SDL2/SDL.h>
 
 #define noop
 
 void Line::draw(SDL_Renderer *renderer) const {
-	std::cout << "[+] START: " << m_start.value().first << ' ' << m_start.value().second << std::endl;
+	// Green, full opacity
+	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+
+	SDL_RenderDrawLine(renderer, m_start.first, m_start.second, m_end.first, m_end.second);
 }
 
 // FIXME: This is so shit
@@ -95,5 +99,8 @@ Line::Line(const SEXPR::SEXPR_LIST* line) {
 	if (nullptr == width) {
 		noop; // todo	
 	}
+#ifdef DEBUG
+	std::cerr << "[+] Line constructor created: " << m_start.first << " " << m_start.second << " " << m_end.first << " " << m_end.second << std::endl;
+#endif
 	return;
 }

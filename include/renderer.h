@@ -11,6 +11,7 @@ class Renderer {
 		void clear();
 		void present();
 		bool handleEvents();
+		SDL_Renderer* getRendererPtr() { return m_renderer; }
 
 	private:
 		SDL_Window* m_window = nullptr;

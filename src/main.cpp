@@ -14,6 +14,7 @@
 #include <sstream>
 #include <memory>
 #include <vector>
+#include <regex>
 
 void assert_header_section(const std::unique_ptr<SEXPR::SEXPR>& root_ast);
 
@@ -69,16 +70,22 @@ int main(int argc, char **argv) {
 	auto list = ast->GetList();
 
 	process_general_section(list);
-	
 	layers_process_section(list);
 
 	Renderer pcbr("kicad_pcb render", 800, 600);
 	bool running = true;
 
+	// Get all sub-sexprs that are gr_line
+	std::regex linesPattern{"gr_line"};
+	auto grLines = find_all_sub_sexprs(list, linesPattern);
 
+	std::vector<Primitive*> linesObj;
+	for (auto& a : grLines) {
+		auto l = new Line(a);
+		linesObj.push_back(l);
+	}
 
-
-
+	/*
 	std::unique_ptr<SEXPR::SEXPR> line;
 	try {
 		line = parser.Parse("(gr_line (start 58 42) (end 58 29) (angle 90) (layer Edge.Cuts) (width 0.15)");
@@ -87,18 +94,28 @@ int main(int argc, char **argv) {
 		std::cerr << "Parse error: " << e.what() << "\n";
 		return 1;
 	}
+	*/
 
+	/*
 	auto l = Line(line->GetList());
 	std::cout << "Successs??? " << std::endl;
 	l.draw(static_cast<SDL_Renderer*>(nullptr));
+	*/
 
 	while (running) {
 		running = pcbr.handleEvents();
 		pcbr.clear();
-		// Draw here
+		for (auto& a : linesObj) {
+			a->draw(pcbr.getRendererPtr());
+		}
 		pcbr.present();
 		SDL_Delay(16);
 	}
+
+	for (auto& a : linesObj) {
+		delete a;
+	}
+
 	return 0;
 }
 
