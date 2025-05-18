@@ -1,10 +1,10 @@
 #pragma once
-
+#include "sexpr.h"
+#include "layer.h"
+#include "geometry.h"
 #include <SDL2/SDL.h>
 #include <string>
 #include <map>
-#include "sexpr.h"
-#include "layer.h"
 
 class Renderer {
 	public:
@@ -16,7 +16,7 @@ class Renderer {
 	void present();
 	bool handleEvents();
 
-	void drawAll() const;
+	void drawAll();
 	void drawLayer(std::string& layer) const;
 
 	void initializeLayers(const SEXPR::SEXPR_LIST *sexpr);
@@ -24,9 +24,16 @@ class Renderer {
 
 	bool addPrimitive(const SEXPR::SEXPR_LIST *primitive);
 
+	BoundingBox getBoundingBox();
+
 	private:
 	SDL_Window* m_window = nullptr;
 	SDL_Renderer* m_renderer = nullptr;
 
+	BoundingBox m_globalBox;
+	bool m_dirty = true;
+
 	std::map<std::string, std::unique_ptr<Layer>> m_layers;
+
+	void updateBoundingBox();
 };

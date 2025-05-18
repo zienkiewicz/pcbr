@@ -3,6 +3,7 @@
 #include <exception>
 #include <sstream>
 #include <iostream>
+#include <limits>
 
 Layer::Layer(const SEXPR::SEXPR_LIST *layer) {
 #ifdef DEBUG
@@ -49,11 +50,21 @@ void Layer::listPrimitives(void) const {
 	}
 }
 
-void Layer::drawAll(SDL_Renderer *renderer) const {
+void Layer::drawAll(SDL_Renderer *renderer, Transform& t) const {
 	for (const auto& a : m_primitives) {
 #ifdef DEBUG
 	std::cerr << "[*] " << __func__ << ": drawing primitive of type " << a->getPrimitiveName() << " inside layer " << m_CANONICAL_NAME << std::endl;
 #endif
-		a->draw(renderer);
+		a->draw(renderer, t);
 	}
+}
+
+BoundingBox Layer::getBoundingBox() const {
+	double inf = std::numeric_limits<double>::infinity();
+	double ninf = -std::numeric_limits<double>::infinity();
+	BoundingBox result = {inf, inf, ninf, ninf};
+	for (const auto& prim : m_primitives) {
+		result.expandToInclude(prim->getBoundingBox());
+	}
+	return result;
 }

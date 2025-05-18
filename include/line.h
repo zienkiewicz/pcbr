@@ -1,6 +1,8 @@
 #pragma once
 #include "sexpr.h"
 #include "primitive.h"
+#include "geometry.h"
+#include "transform_utils.h"
 
 class Line : public Primitive {
 	private:
@@ -19,6 +21,7 @@ class Line : public Primitive {
 		std::pair<double, double> end,
 		std::optional<double> angle = std::nullopt
 	) : Primitive{scope, layer}, m_width{width}, m_start{start}, m_end{end}, m_angle{angle} {} 
-
-	void draw(SDL_Renderer *renderer) const override;
+	
+	BoundingBox getBoundingBox() const;
+	void draw(SDL_Renderer *renderer, Transform& t) const override;
 };

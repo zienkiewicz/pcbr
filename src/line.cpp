@@ -1,5 +1,6 @@
 #include "line.h"
 #include "sexpr_utils.h"
+#include "transform_utils.h"
 
 #include <iostream>
 #include <sstream>
@@ -7,11 +8,14 @@
 
 #define noop
 
-void Line::draw(SDL_Renderer *renderer) const {
+void Line::draw(SDL_Renderer *renderer, Transform& t) const {
 	// Green, full opacity
 	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
 
-	SDL_RenderDrawLine(renderer, m_start.first, m_start.second, m_end.first, m_end.second);
+	auto p1 = worldToScreen(m_start.first, m_start.second, t);
+	auto p2 = worldToScreen(m_end.first, m_end.second, t);
+
+	SDL_RenderDrawLine(renderer, p1.x, p1.y, p2.x, p2.y);
 }
 
 // FIXME: This is so shit
@@ -112,4 +116,13 @@ Line::Line(const SEXPR::SEXPR_LIST* line) {
 	std::cerr << "[+] Line constructor created: " << m_start.first << " " << m_start.second << " " << m_end.first << " " << m_end.second << std::endl;
 #endif
 	return;
+}
+
+BoundingBox Line::getBoundingBox() const {
+	return {
+		static_cast<float>(std::min(m_start.first, m_end.first)),
+		static_cast<float>(std::min(m_start.second, m_end.second)),
+		static_cast<float>(std::max(m_start.first, m_end.first)),
+		static_cast<float>(std::max(m_start.second, m_end.second))
+	};
 }

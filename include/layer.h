@@ -1,11 +1,13 @@
 #pragma once
 #include "sexpr.h"
 #include "primitive.h"
+#include "transform_utils.h"
 #include <string>
 #include <optional>
 #include <memory>
 #include <vector>
 #include <SDL2/SDL.h>
+#include <cmath>
 
 class Layer {
 	public:
@@ -36,7 +38,9 @@ class Layer {
 		TYPE getType() const { return m_TYPE; }
 		std::optional<std::string> getUserName() const { return m_USER_NAME; }
 
-		void drawAll(SDL_Renderer *renderer) const;
+		void drawAll(SDL_Renderer *renderer, Transform& t) const;
 		void addPrimitive(std::unique_ptr<Primitive> primitive);
 		void listPrimitives(void) const;
+
+		BoundingBox getBoundingBox() const;
 };

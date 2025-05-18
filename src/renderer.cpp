@@ -2,6 +2,7 @@
 #include "layer_utils.h"
 #include "sexpr_utils.h"
 #include "primitive_factory.h"
+#include "transform_utils.h"
 #include "assertm.h"
 #include <iostream>
 
@@ -85,6 +86,7 @@ void Renderer::listLayersMembers(void) const {
 }
 
 bool Renderer::addPrimitive(const SEXPR::SEXPR_LIST *primitive) {
+	m_dirty = true;
 	auto child = primitive->GetChild(0);
 
 	std::string s1{__func__};
@@ -112,12 +114,34 @@ bool Renderer::addPrimitive(const SEXPR::SEXPR_LIST *primitive) {
 	return true;
 }
 
-void Renderer::drawAll() const {
+void Renderer::drawAll() {
+	BoundingBox box = getBoundingBox();
+	int w, h;
+	SDL_GetWindowSize(m_window, &w, &h);
+	Transform t = makeTransform(box, w, h);
+
 	for (const auto& [layer, ptr] : m_layers) {
 #if DEBUG
 		std::cerr << "[*] " << __func__ << ": drawing ALL PRIMITIVES inside " << layer << std::endl;
 #endif
-		ptr->drawAll(m_renderer);	
+		ptr->drawAll(m_renderer, t);	
 	}
+}
 
+void Renderer::updateBoundingBox() {
+	double inf = std::numeric_limits<double>::infinity();
+        double ninf = -std::numeric_limits<double>::infinity();
+	m_globalBox = {inf, inf, ninf, ninf};
+	for (const auto& [_, layer] : m_layers) {
+		BoundingBox b = layer->getBoundingBox();
+		m_globalBox.expandToInclude(b);
+	}
+	m_dirty = false;
+}
+
+BoundingBox Renderer::getBoundingBox() {
+	if (m_dirty) {
+		updateBoundingBox();
+	}
+	return m_globalBox;
 }

@@ -1,4 +1,6 @@
 #pragma once
+#include "geometry.h"
+#include "transform_utils.h"
 #include <SDL2/SDL.h>
 #include <optional>
 #include <string>
@@ -13,24 +15,13 @@ class Primitive {
 	std::string m_layer;
 	SCOPE m_scope;
 
-
-//		std::optional<double> m_width;
-//		std::optional<std::pair<double,double>> m_start;
-//		std::optional<std::pair<double,double>> m_end;
-//		std::vector<std::pair<double,double>> m_pts;
-//		std::optional<double> m_angle;
-		
-//		Primitive(SCOPE scope, std::string layer,
-//			std::optional<double> width,
-//			std::optional<std::pair<double, double>> start,
-//			std::optional<std::pair<double, double>> end,
-//			std::optional<double> angle) :
-//			m_scope{scope}, m_layer{layer}, m_width{width}, m_start{start}, m_end{end}, m_angle{angle} {}
 	Primitive(SCOPE scope, std::string layer) : m_layer{layer}, m_scope{scope} {}
 	Primitive() {}
+	virtual ~Primitive() = default;
 
 	std::string getLayerName() const { return m_layer;}
 	std::string getPrimitiveName() const { return m_name; }
-	virtual ~Primitive() = default;
-	virtual void draw(SDL_Renderer *renderer) const = 0;
+
+	virtual void draw(SDL_Renderer *renderer, Transform& t) const = 0;
+	virtual BoundingBox getBoundingBox() const = 0;
 };
