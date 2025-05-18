@@ -1,4 +1,8 @@
 #include "renderer.h"
+#include "layer_utils.h"
+#include "sexpr_utils.h"
+#include "primitive_factory.h"
+#include "assertm.h"
 #include <iostream>
 
 Renderer::Renderer(const std::string& title, int width, int height) {
@@ -18,6 +22,10 @@ Renderer::Renderer(const std::string& title, int width, int height) {
 		std::cerr << "SDLCreateRenderer Error: " << SDL_GetError() << std::endl;
 		std::exit(1);
 	}
+}
+
+Renderer::Renderer(const std::string& title, int width, int height, const SEXPR::SEXPR_LIST *sexpr) : Renderer{title, width, height} {
+	initializeLayers(sexpr);
 }
 
 Renderer::~Renderer() {
@@ -44,4 +52,72 @@ bool Renderer::handleEvents() {
         }
     }
     return true;
+}
+
+void Renderer::initializeLayers(const SEXPR::SEXPR_LIST *sexpr) {
+	auto layers = find_sub_sexpr(sexpr, "layers");
+	LayerUtils::assertSection(layers);
+
+#ifdef DEBUG
+	std::cerr << "[*] " << __func__ << ": " << layers->AsString() << std::endl;
+#endif
+
+	for (int64_t i = 1, children = layers->GetNumberOfChildren(); i < children; i++) {
+		auto child = layers->GetChild(i);
+#ifdef DEBUG
+		std::cerr << "[*] " << __func__ << ": child " << child->AsString() << std::endl;
+#endif
+		std::string s1{__func__};
+		std::string s2{" child of layers must be a list"};
+		auto s3 = s1 + s2;
+		assertm(s3.c_str(), child->IsList());
+
+		Layer* l = new Layer(child->GetList());
+		m_layers[l->getCanonicalName()] = std::unique_ptr<Layer>{l};
+	}
+}
+
+void Renderer::listLayersMembers(void) const {
+	for (auto& a : m_layers) {
+		std::cout << "[*] " << __func__ << ": Layer with a canoncial name of: " << a.first << ':' << std::endl;
+		a.second->listPrimitives();
+	}
+}
+
+bool Renderer::addPrimitive(const SEXPR::SEXPR_LIST *primitive) {
+	auto child = primitive->GetChild(0);
+
+	std::string s1{__func__};
+	std::string s2{" 0th child of primitive must be a symbol"};
+	auto s3 = s1 + s2;
+	assertm(s3, child->IsSymbol());
+
+	auto resultPrimitive = PrimitiveFactory::instance().create(child->GetSymbol(), primitive);
+	if (nullptr == resultPrimitive) {
+#ifdef DEBUG
+		std::cerr << "[*] " << __func__ << ": failed to create primitive: " << child->GetSymbol() << " not registered" << std::endl;
+#endif
+		return false;
+	}
+	auto layerName = resultPrimitive->getLayerName();
+	if (m_layers.find(layerName) != m_layers.end()) {
+		m_layers[layerName]->addPrimitive(std::move(resultPrimitive));
+	} else {
+#ifdef DEBUG
+		std::cerr << "[*] " << __func__ << ": failed to create primitive: layer " << layerName << " not in m_layers" << std::endl;
+#endif
+		return false;
+	}
+
+	return true;
+}
+
+void Renderer::drawAll() const {
+	for (const auto& [layer, ptr] : m_layers) {
+#if DEBUG
+		std::cerr << "[*] " << __func__ << ": drawing ALL PRIMITIVES inside " << layer << std::endl;
+#endif
+		ptr->drawAll(m_renderer);	
+	}
+
 }

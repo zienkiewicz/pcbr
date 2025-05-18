@@ -4,7 +4,6 @@
 #include <sstream>
 #include <iostream>
 
-
 Layer::Layer(const SEXPR::SEXPR_LIST *layer) {
 #ifdef DEBUG
 	std::cerr << "[+] Layer(const SEXPR::SEXPR_LIST *layer)" << std::endl << '\t' << layer->AsString() << std::endl;
@@ -38,4 +37,23 @@ Layer::Layer(const SEXPR::SEXPR_LIST *layer) {
 		<< " canonicalNameSeen "  << canonicalNameSeen << " typeSeen " << typeSeen
 		<< " userNameSeen " << userNameSeen << std::endl;
 #endif
+}
+
+void Layer::addPrimitive(std::unique_ptr<Primitive> primitive) {
+	m_primitives.push_back(std::move(primitive));
+}
+
+void Layer::listPrimitives(void) const {
+	for (auto& a : m_primitives) {
+		std::cout << "[*] " << __func__ << ": " << a->getPrimitiveName() << std::endl;
+	}
+}
+
+void Layer::drawAll(SDL_Renderer *renderer) const {
+	for (const auto& a : m_primitives) {
+#ifdef DEBUG
+	std::cerr << "[*] " << __func__ << ": drawing primitive of type " << a->getPrimitiveName() << " inside layer " << m_CANONICAL_NAME << std::endl;
+#endif
+		a->draw(renderer);
+	}
 }

@@ -9,6 +9,7 @@
 class Primitive {
 	public:
 	enum class SCOPE { global, footprint };
+	std::string m_name;
 	std::string m_layer;
 	SCOPE m_scope;
 
@@ -28,6 +29,8 @@ class Primitive {
 	Primitive(SCOPE scope, std::string layer) : m_layer{layer}, m_scope{scope} {}
 	Primitive() {}
 
+	std::string getLayerName() const { return m_layer;}
+	std::string getPrimitiveName() const { return m_name; }
 	virtual ~Primitive() = default;
 	virtual void draw(SDL_Renderer *renderer) const = 0;
 };

@@ -74,6 +74,7 @@ Line::Line(const SEXPR::SEXPR_LIST* line) {
 	} else {
 		throw std::runtime_error(errorMessage.str());	
 	}
+	m_name = name;
 
 	const SEXPR::SEXPR_LIST* start = find_sub_sexpr(line, "start");
 	if (nullptr == start) {
@@ -92,7 +93,15 @@ Line::Line(const SEXPR::SEXPR_LIST* line) {
 
 	const SEXPR::SEXPR_LIST* layer = find_sub_sexpr(line, "layer");
 	if (nullptr == layer) {
-		noop; // todo	
+#ifdef DEBUG
+		std::cerr << "[+] LINE: layer is " << layer->AsString() << std::endl;
+#endif
+	} else {
+		// FIXME: hardcoded index for layer name
+#ifdef DEBUG
+		m_layer = layer->GetChild(1)->GetSymbol();
+		std::cerr << "[*] " << __func__ << ": " << m_name << "is inside layer " << m_layer << std::endl;
+#endif
 	}
 
 	const SEXPR::SEXPR_LIST* width = find_sub_sexpr(line, "width");

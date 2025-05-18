@@ -15,6 +15,7 @@
 #include <memory>
 #include <vector>
 #include <regex>
+#include <map>
 
 void assert_header_section(const std::unique_ptr<SEXPR::SEXPR>& root_ast);
 
@@ -29,23 +30,6 @@ void process_general_section(const SEXPR::SEXPR_LIST *sexpr) {
 
 	const SEXPR::SEXPR_LIST* g = static_cast<const SEXPR::SEXPR_LIST*>(general);
 	General gen{g};
-}
-
-void layers_process_section(const SEXPR::SEXPR_LIST *sexpr) {
-	auto layers = find_sub_sexpr(sexpr, "layers");
-	LayerUtils::assertSection(layers);
-	std::vector<Layer> v;
-#ifdef DEBUG
-	std::cerr << "[+] process_layers_section" << std::endl << layers->AsString() << std::endl;
-#endif
-	for (int64_t i = 1, children = layers->GetNumberOfChildren(); i < children; i++) {
-		auto child = layers->GetChild(i);
-#ifdef DEBUG
-		std::cerr << "[+] Child" << std::endl << child->AsString() << std::endl;
-#endif
-		assertm("child of layers must be a list", child->IsList());
-		v.push_back(Layer(child->GetList()));
-	}
 }
 
 int main(int argc, char **argv) {
@@ -68,52 +52,35 @@ int main(int argc, char **argv) {
 	
 	assert_header_section(ast);
 	auto list = ast->GetList();
-
 	process_general_section(list);
-	layers_process_section(list);
 
-	Renderer pcbr("kicad_pcb render", 800, 600);
-	bool running = true;
 
-	// Get all sub-sexprs that are gr_line
+	PrimitiveFactory::instance().registerPrimitive("gr_line", [](const SEXPR::SEXPR_LIST *sexpr) {
+		return std::make_unique<Line>(sexpr);
+	});
+
+	Renderer pcbr("kicad_pcb render", 800, 600, list);
+
 	std::regex linesPattern{"gr_line"};
 	auto grLines = find_all_sub_sexprs(list, linesPattern);
 
-	std::vector<Primitive*> linesObj;
 	for (auto& a : grLines) {
-		auto l = new Line(a);
-		linesObj.push_back(l);
+		pcbr.addPrimitive(a);
 	}
 
-	/*
-	std::unique_ptr<SEXPR::SEXPR> line;
-	try {
-		line = parser.Parse("(gr_line (start 58 42) (end 58 29) (angle 90) (layer Edge.Cuts) (width 0.15)");
-		std::cout << "Parsed dummy line successfully!\n";
-	} catch (const std::exception& e) {
-		std::cerr << "Parse error: " << e.what() << "\n";
-		return 1;
-	}
-	*/
+#ifdef DEBUG
+	pcbr.listLayersMembers();
+#endif
 
-	/*
-	auto l = Line(line->GetList());
-	std::cout << "Successs??? " << std::endl;
-	l.draw(static_cast<SDL_Renderer*>(nullptr));
-	*/
+
+	bool running = true;
 
 	while (running) {
 		running = pcbr.handleEvents();
 		pcbr.clear();
-		for (auto& a : linesObj) {
-			a->draw(pcbr.getRendererPtr());
-		}
+		pcbr.drawAll();
 		pcbr.present();
-		SDL_Delay(16);
-	}
-
-	for (auto& a : linesObj) {
-		delete a;
+		SDL_Delay(42);
 	}
 
 	return 0;
